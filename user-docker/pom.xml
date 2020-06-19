@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.timing</groupId>
+        <artifactId>user-parent</artifactId>
+        <version>${revision}${changelist}</version>
+        <relativePath>../user-parent/pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>user-docker</artifactId>
+
+
+    <properties>
+        <docker.image.name>app-docker</docker.image.name>
+        <dockerfile.dir>${project.build.directory}/docker-build</dockerfile.dir>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.timing</groupId>
+            <artifactId>user-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+
+        <plugins>
+            <!--
+
+            步骤1
+            先把 app-war-exec.jar 可运行包 copy 到build 的文件目录底下，
+            准备打包成 zip 包
+
+            mvn package dependency:copy
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.timing</groupId>
+                                    <artifactId>user-package</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <destFileName>app.zip</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${dockerfile.dir}/app</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+
+            </plugin>
+
+
+            <!--
+           第二步：
+           把 资源文件，配置问价， logback 等 copy 到指定 build 的目录下，
+
+           -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>docker</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${dockerfile.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/docker</directory>
+                                </resource>
+                            </resources>
+                            <includeEmptyDirs>true</includeEmptyDirs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <!--
+       步骤3，docker 环境上，build 出 docker 镜像
+       -->
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.33.0</version>
+                <executions>
+                    <execution>
+                        <id>aa</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>${docker.image.name}</name>
+                            <build>
+                                <dockerFileDir>${dockerfile.dir}</dockerFileDir>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

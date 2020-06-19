@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.timing</groupId>
+        <artifactId>user-parent</artifactId>
+        <version>${revision}${changelist}</version>
+        <relativePath>user-parent/pom.xml</relativePath>
+    </parent>
+    <artifactId>maven-java-pipeline</artifactId>
+    <packaging>pom</packaging>
+
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>user-parent</module>
+                <module>user-app</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>package</id>
+            <modules>
+                <module>user-package</module>
+                <module>user-ct</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <modules>
+                <module>user-docker</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>helm</id>
+            <modules>
+                <module>user-helm</module>
+            </modules>
+        </profile>
+    </profiles>
+
+
+</project>

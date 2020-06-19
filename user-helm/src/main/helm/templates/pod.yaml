@@ -1,0 +1,21 @@
+apiversion: apps/v1
+kind: Pod
+metadata:
+  name: myapp
+  namespace: n1   # pod 放进那个命名空间运行
+  labels:
+    app: myapp
+spec:
+  nodeName: node2 # 写死pod的会安装到 node2 这个 worker 上面
+  volumes: # 定义 container 关联的宿主机或分布式文件系统的存储位置
+    - name: storage1
+      hostPath: # 使用宿主机
+        mountPath: /data/volumes/myapp
+        type: DirectoryOrCreate # 如果宿主机没有此目录则创建
+  containers:
+    - name: myapp
+      image: xxxxx
+      volumeMounts: # 定义挂载内容
+        - name: storage1 # 跟 volumes 声明要一致
+          mountPath: /usr/shar/data  # container 的目录，注意与 宿主机目录区分
+          readOnly: true # 只读模式
